@@ -17,7 +17,7 @@
                 <td>
                     <button @click="user_mgs(user.id)">详细信息</button>
                     |
-                    <button>删除</button>
+                    <button @click="del_user_mgs(user.id)">删除</button>
                 </td>
             </tr>
         </table>
@@ -42,6 +42,9 @@ export default {
         user_mgs(s){
             this.$router.push("/user/"+s+"/")
         },
+        del_user_mgs(s){
+            this.user_list.splice(s-1,1);
+        }
     }
 }
 </script>
