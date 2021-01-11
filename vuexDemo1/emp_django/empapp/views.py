@@ -142,22 +142,22 @@ class UserAPIVIew(APIView):
 
         except:
             return Response({
-                "message": "删除失败或图书不存在",
+                "message": "删除失败或用户不存在",
             }, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, raquest, *args, **kwargs):
         request_data = raquest.data
         user_id = kwargs.get("id")
         try:
-            user_obj = Book.objects.get(pk=user_id)
+            user_obj = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return Response({
-                "message": "修改的图书不存在"
+                "message": "修改的用户不存在"
             }, status=status.HTTP_400_BAD_REQUEST)
         serializer = UserDeMoDELSerializer(data=request_data, instance=user_obj, partial=True)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response({
             "message": "修改成功",
-            "results": BookModelSerializerV2(book).data
+            "results": UserDeMoDELSerializer(user).data
         }, status=status.HTTP_200_OK)
