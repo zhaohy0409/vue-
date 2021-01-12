@@ -8,7 +8,7 @@
                 <div class="grid-content bg-purple">
                     <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
                         <el-form-item label="ID" prop="name">
-                            <span>{{ ruleForm.id }}</span>
+                            <span>{{ruleForm.id}}</span>
                         </el-form-item>
                         <el-form-item label="姓名" prop="name">
                             <el-input v-model="ruleForm.name"></el-input>
@@ -41,7 +41,6 @@
                 <div class="grid-content bg-purple">&nbsp;</div>
             </el-col>
         </el-row>
-
     </div>
 </template>
 
@@ -91,16 +90,17 @@ export default {
                         url: "http://127.0.0.1:8000/empapp/index/",
                         method: "patch",
                         params: {
-                            id:this.ruleForm.id,
-                            username:this.ruleForm.name,
-                            userpassword:this.ruleForm.password,
-                            age:this.ruleForm.age,
+                            id: this.ruleForm.id,
+                            username: this.ruleForm.name,
+                            userpassword: this.ruleForm.password,
+                            age: this.ruleForm.age,
                             salay: this.ruleForm.salay,
-                            date:this.ruleForm.date1,}
+                            date: this.ruleForm.date1,
+                        }
                     }).then(response => {
-                        alert(response.data.message);
+                        alert(response.data);
                     }).catch(error => {
-                        alert(error.data.message);
+                        alert(error.data);
                     })
                 } else {
                     console.log('error submit!!');
@@ -114,23 +114,22 @@ export default {
     },
     created() {
         let uid = this.$route.params.id
-        // console.log(typeof uid)
         this.$axios({
-            url:  "http://127.0.0.1:8000/empapp/index/"+uid,
+            url: "http://127.0.0.1:8000/empapp/index/" + uid,
             method: "get",
             // params: {
             //     id: uid
             // },
         }).then(response => {
             console.log(response, '222222222')
-            this.ruleForm.id = response.data.results.id
-            this.ruleForm.name = response.data.results.username
-            this.ruleForm.password = response.data.results.userpassword
-            this.ruleForm.age = Number(response.data.results.age)
-            this.ruleForm.salay = Number(response.data.results.salay)
-            this.ruleForm.date1 = new Date(response.data.results.date)
+            this.ruleForm.id = response.data.id
+            this.ruleForm.name = response.data.username
+            this.ruleForm.password = response.data.userpassword
+            this.ruleForm.age = Number(response.data.age)
+            this.ruleForm.salay = Number(response.data.salay)
+            this.ruleForm.date1 = new Date(response.data.date)
         }).catch(error => {
-            // alert(error.data.message);
+            console.log(error, "11111111")
         })
     },
 }

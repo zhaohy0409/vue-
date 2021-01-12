@@ -1,8 +1,12 @@
 from django.http import HttpResponse, JsonResponse
-from rest_framework import status
+from rest_framework import status, mixins
 from django.shortcuts import render
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+
 from empapp.models import User
 # from empapp.serializer import UserSerializer, UserDeSerializer
 
@@ -96,68 +100,118 @@ from empapp.models import User
 #
 #     def delete(self,request, *args, **kwargs):
 from empapp.serializer import UserDeMoDELSerializer
+from utils.response import APIResponse
 
 
-class UserAPIVIew(APIView):
+# class UserAPIVIew(APIView):
+#
+#     def get(self, request, *args, **kwargs):
+#         user_id = kwargs.get("id")
+#         # print(user_id)
+#         if user_id:
+#             user_obj = User.objects.get(pk=user_id)
+#             serializer = UserDeMoDELSerializer(user_obj).data
+#             return Response({"results": serializer})
+#         else:
+#             user_all = User.objects.all()
+#             user_ser = UserDeMoDELSerializer(user_all, many=True).data
+#             return Response({"results": user_ser})
+#
+#     def post(self, request, *args, **kwargs):
+#         request_data = request.data
+#         if isinstance(request_data, dict) or request_data != {}:
+#             many = False
+#         elif isinstance(request_data, list) or request_data != {}:
+#             many = True
+#         else:
+#             return Response({"message": "请求参数有误"}, status=400)
+#         serializer = UserDeMoDELSerializer(data=request_data, many=many)
+#         serializer.is_valid(raise_exception=True)
+#         user_obj = serializer.save()
+#         return Response({"message": "创建成功",
+#                          "results": UserDeMoDELSerializer(user_obj, many=many).data},
+#                         status=status.HTTP_201_CREATED)
+#
+#     def delete(self, request, *args, **kwargs):
+#         user_id = kwargs.get("id")
+#         # print(user_id)
+#         if user_id:
+#             ids = [user_id]
+#         else:
+#             ids = request.data.get("ids")
+#         try:
+#             response = User.objects.get(pk__in=ids).delete()
+#             return Response({
+#                 "message": "删除成功",
+#             }, status=status.HTTP_200_OK)
+#
+#         except:
+#             return Response({
+#                 "message": "删除失败或用户不存在",
+#             }, status=status.HTTP_400_BAD_REQUEST)
+#
+#     def patch(self, raquest, *args, **kwargs):
+#         request_data = raquest.data
+#         print(request_data)
+#         user_id = kwargs.get("id")
+#         print(user_id)
+#         try:
+#             user_obj = User.objects.get(pk=user_id)
+#         except User.DoesNotExist:
+#             return Response({
+#                 "message": "修改的用户不存在"
+#             }, status=status.HTTP_400_BAD_REQUEST)
+#         serializer = UserDeMoDELSerializer(data=request_data, instance=user_obj, partial=True)
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.save()
+#         return Response({
+#             "message": "修改成功",
+#             "results": UserDeMoDELSerializer(user).data
+#         }, status=status.HTTP_200_OK)
+
+
+class UserGenericsAPIView(GenericAPIView,
+                            ListModelMixin,
+                            RetrieveModelMixin,
+                            CreateModelMixin,
+                            mixins.UpdateModelMixin,
+                            mixins.DestroyModelMixin):
+    queryset = User.objects.all()
+    serializer_class = UserDeMoDELSerializer
+    lookup_field = "id"
 
     def get(self, request, *args, **kwargs):
-        user_id = kwargs.get("id")
-        print(user_id)
-        if user_id:
-            user_obj = User.objects.get(pk=user_id)
-            serializer = UserDeMoDELSerializer(user_obj).data
-            return Response({"results": serializer})
+        if "id" in kwargs:
+            return self.retrieve(request, *args, **kwargs)
         else:
-            user_all = User.objects.all()
-            user_ser = UserDeMoDELSerializer(user_all, many=True).data
-            return Response({"results": user_ser})
+            return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        request_data = request.data
-        if isinstance(request_data, dict) or request_data != {}:
-            many = False
-        elif isinstance(request_data, list) or request_data != {}:
-            many = True
-        else:
-            return Response({"message": "请求参数有误"}, status=400)
-        serializer = UserDeMoDELSerializer(data=request_data, many=many)
-        serializer.is_valid(raise_exception=True)
-        user_obj = serializer.save()
-        return Response({"message": "创建成功",
-                         "results": UserDeMoDELSerializer(user_obj, many=many).data},
-                        status=status.HTTP_201_CREATED)
+        response = self.create(request, *args, **kwargs)
+        return APIResponse(results=response.data)
+
+    def put(self, request, *args, **kwargs):
+        response = self.update(request, *args, **kwargs)
+        return APIResponse(results=response.data)
+
+    def patch(self, request, *args, **kwargs):
+        response = self.partial_update(request, *args, **kwargs)
+        return APIResponse(results=response.data)
 
     def delete(self, request, *args, **kwargs):
-        user_id = kwargs.get("id")
-        print(user_id)
-        if user_id:
-            ids = [user_id]
+        response = self.destroy(request, *args, **kwargs)
+        return APIResponse(results=response.data)
+
+
+class LoginViewSet(ViewSet):
+
+    def login_count(self, request, *args, **kwargs):
+        request_data = request.data
+        print(request_data)
+        user = request_data.user
+        pwd = request_data.pwd
+        user_login = User.objects.filter(username=user, userpassword=pwd)
+        if user_login:
+            return APIResponse(results=True, data_message="登陆成功")
         else:
-            ids = request.data.get("ids")
-        try:
-            response = User.objects.get(pk__in=ids).delete()
-            return Response({
-                "message": "删除成功",
-            }, status=status.HTTP_200_OK)
-
-        except:
-            return Response({
-                "message": "删除失败或用户不存在",
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-    def patch(self, raquest, *args, **kwargs):
-        request_data = raquest.data
-        user_id = kwargs.get("id")
-        try:
-            user_obj = User.objects.get(pk=user_id)
-        except User.DoesNotExist:
-            return Response({
-                "message": "修改的用户不存在"
-            }, status=status.HTTP_400_BAD_REQUEST)
-        serializer = UserDeMoDELSerializer(data=request_data, instance=user_obj, partial=True)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response({
-            "message": "修改成功",
-            "results": UserDeMoDELSerializer(user).data
-        }, status=status.HTTP_200_OK)
+            return APIResponse(results=False, data_message="登陆失败")

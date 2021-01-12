@@ -1,5 +1,5 @@
 <template>
-    <div id="a">
+    <div id="index">
         <el-container>
             <el-header>Header</el-header>
             <el-table
@@ -34,7 +34,7 @@
                 <el-table-column
                     align="right">
                     <template slot="header" slot-scope="scope">
-                        <el-button type="primary" icon="el-icon-edit" size="mini"@click="adduser()">添加</el-button>
+                        <el-button type="primary" icon="el-icon-edit" size="mini" @click="adduser()">添加</el-button>
                     </template>
                     <template slot-scope="scope">
                         <el-button
